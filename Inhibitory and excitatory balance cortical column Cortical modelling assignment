@@ -1,0 +1,96 @@
+clear all;
+close all;
+hold off; 
+clc;
+
+%% Set parameters
+    %Damping factor
+    damp_1  = 2.5;
+    
+    %Manipulate the coupling strength
+    w_1     = 1.091  * 2 *  pi;
+    w_2     = 1.1111 * 2 *  pi; 
+    
+    excitatory = w_1;
+    inhibitory = w_2;
+    
+    % w_1     = 1.091*2*pi;
+    % w_2     = 1.1111 * 2*pi; 
+    
+    %Time-step
+    dt      = 0.1; 
+    
+    % Excitatory neurons    Inhibitory neurons
+    Ne=800;                 Ni=200;
+    re=rand(Ne,1);          ri=rand(Ni,1); 
+    v_1= [zeros(Ne, 2);     zeros(Ni, 2)];
+    v_2= [zeros(Ne, 2);     zeros(Ni, 2)];
+    dv_1=[zeros(Ne, 2);     zeros(Ni, 2)];
+    dv_2=[zeros(Ne, 2);     zeros(Ni, 2)];
+
+% Initialize random weights
+weight=[0.5*rand(Ne+Ni,Ne),-rand(Ne+Ni,Ni)]; 
+
+%Range
+range = 5000;
+
+% Get spike times
+
+firings=[];   
+
+%Initialize secondary inputs
+Input_1 = zeros(1000,range);
+In_2 = zeros(1000,range);
+
+%%
+for time=2:range     % simulation of 1000 ms 
+
+    I(:,time) =[5*randn(Ne,1);5*randn(Ni,1)]; % Random inputs to the neurons.  
+    Spike = v_1(:,time-1); % Store spike if membrane potential greater than threshold.
+    fired=find(Spike>=1); % indices of spikes
+    if ~isempty(fired)
+        firings=[firings; time+0*fired, fired];
+        I(:,time) = I(:,time) + sum(weight(:,fired),2); %Input for the next layer
+    end
+    %% Secondary inputs
+    %secondary connectivity
+    
+    for i = 1:1000
+        if v_1(i,time-1)>=1
+            Input_1(i,time) = I(i,time);
+            
+            
+        end
+    end
+    
+    for j = 1:1000
+        In_2 (j,time) = Input_1(j,time)* sum(weight(j,fired),2)';  
+        
+        %fr(1,time) = ((sum(firings(:,2)<1000)/1000/time))*1000
+    end
+    
+
+        %% Implementation of RAF first order ODEs
+        
+        
+        dv_1(:,time) = v_2(:,time-1);
+        %Generate frequency for inhibitory and excitatory
+        Natural_frequency_excit  = -(excitatory ^2)*v_1(:,time-1);
+        Natural_frequency_inhib  = -(inhibitory ^2)*v_1(:,time-1);
+        Nat_freq = [Natural_frequency_excit(1:800,:); Natural_frequency_inhib(801:end,:)];
+        
+        dv_2(:,time) = Nat_freq - 2*damp_1*v_2(:,time-1) + I(:,time-1) +In_2(:,time-1);
+        
+        v_1(:,time) = v_1(:,time-1) + dt*dv_1(:,time);
+        v_2(:,time) = v_2(:,time-1) + dt*dv_2(:,time);
+    
+
+    
+end;
+
+
+
+    figure('Name', 'Unstructured Cortical Column Simulation')
+    plot(firings(:, 1),firings(:, 2),'.');
+    xlabel('Time (ms)'); ylabel('Neuronal firings');
+
