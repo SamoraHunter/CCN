@@ -1,0 +1,186 @@
+%%%% CA structure histograms
+
+% Average first within CA type
+
+% Then average across files
+
+clc;
+clear all;
+
+files = dir(fullfile('CAstructurePhase105','*.txt'));
+
+files(1).name;
+
+ylimsize = 24;
+
+%a = load(files(1).name)
+
+for i = 1:size(files,1);
+
+rawdat = CAtext(files(i).name);
+
+%Extract raw data from text file corresponding to CA type
+
+CA16PHONO      = rawdat(1:6, 3:14);
+
+CA79MOTOR      = rawdat(7:9, 3:14);
+
+CA1012VISUAL   = rawdat(10:12, 3:14);
+
+%Average CA type CA struct
+
+CA16PHONOav    = round(mean(CA16PHONO));
+
+CA79MOTORav    = round(mean(CA79MOTOR));
+
+CA1012VISUALav = round(mean(CA1012VISUAL));
+
+%Add averages of CA's from each CA structure to a matrix
+
+PHONOMATRIX(i,:) = CA16PHONOav;
+
+MOTORMATRIX(i,:) = CA79MOTORav;
+
+VISUALMATRIX(i,:)= CA1012VISUALav;
+
+%Compute average across trials
+
+PHONOTOTAL = round(mean(PHONOMATRIX));
+
+MOTORTOTAL = round(mean(MOTORMATRIX));
+
+VISUALTOTAL = round(mean(VISUALMATRIX));
+
+%Compute errorbar values,divide STD by SQRoot of N
+
+
+
+
+end
+
+x = 1:6;
+
+%%%STDE calculations:
+%%Extrasylvian
+
+stderrorphonE = std( PHONOMATRIX (:,1:6) )  / sqrt( length( PHONOMATRIX  (:,1:6)));
+
+stderrorvisE  = std( MOTORMATRIX (:,1:6) ) / sqrt( length( MOTORMATRIX  (:,1:6)));
+
+stderrormotE  = std( VISUALMATRIX(:,1:6) ) / sqrt( length( VISUALMATRIX (:,1:6)));
+
+%%Perisylvian
+
+stderrorphonP = std( PHONOMATRIX (:,7:12)) / sqrt( length( PHONOMATRIX  (:,7:12)));
+
+stderrorvisP  = std( MOTORMATRIX (:,7:12)) / sqrt( length( MOTORMATRIX  (:,7:12)));
+
+stderrormotP  = std( VISUALMATRIX(:,7:12)) / sqrt( length( VISUALMATRIX (:,7:12)));
+
+
+areanamesPS = {'V1'; 'TO'; 'AT'; 'PF_{D}'; 'PM_{D}'; 'M1_{D}'};
+
+areanamesES = {'A1'; 'AB'; 'PB'; 'PF_{V}'; 'PM_{V}'; 'M1_{V}'};
+
+%% Figure 1 Extraslyvian
+%Split Perisylvian / Extraslyvian 
+%histogram(CA16PHONOav);
+figure(1)
+suptitle('Extraslyvian Areas')
+subplot(1,2,1)
+bar(PHONOTOTAL(1:6))
+title('Articulatory')
+set(gca,'xticklabel',areanamesPS)
+ylim([0 ylimsize])
+xlabel('Cortical area')
+ylabel('No. CA cells')
+hold on
+
+er = errorbar(PHONOTOTAL(1:6), stderrorphonE(1:6));    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+hold off
+%%
+figure(2)
+subplot(1,2,1)
+bar(MOTORTOTAL(1:6))
+title('Motor')
+set(gca,'xticklabel',areanamesPS)
+xlabel('Cortical area')
+ylim([0 ylimsize])
+ylabel('No. CA cells')
+hold on
+
+er = errorbar(MOTORTOTAL(1:6), stderrormotE(1:6));    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+hold off
+
+%%
+subplot(1,2,2)
+bar(VISUALTOTAL(1:6))
+title('Visual')
+set(gca,'xticklabel',areanamesPS)
+ylim([0 ylimsize])
+xlabel('Cortical area')
+ylabel('No. CA cells')
+hold on
+
+er = errorbar(VISUALTOTAL(1:6), stderrorvisE(1:6));    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+hold off
+%% Figure 2 Perisylvian
+
+figure(3)
+suptitle('Perisylvian Areas')
+subplot(1,2,1)
+bar(PHONOTOTAL(7:12))
+title('Articulatory')
+set(gca,'xticklabel',areanamesES)
+ylim([0 ylimsize])
+xlabel('Cortical area')
+ylabel('No. CA cells')
+hold on
+
+er = errorbar(PHONOTOTAL(7:12), stderrorphonP(1:6));    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+hold off
+%%
+figure(4)
+subplot(1,2,1)
+bar(MOTORTOTAL(7:12))
+title('Motor')
+set(gca,'xticklabel',areanamesES)
+ylim([0 ylimsize])
+xlabel('Cortical area')
+ylabel('No. CA cells')
+hold on
+
+er = errorbar(MOTORTOTAL(7:12), stderrormotP(1:6));    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+hold off
+
+%%
+
+subplot(1,2,2)
+bar(VISUALTOTAL(7:12))
+title('Visual')
+set(gca,'xticklabel',areanamesES)
+ylim([0 ylimsize])
+xlabel('Cortical area')
+ylabel('No. CA cells')
+hold on
+
+er = errorbar(VISUALTOTAL(7:12), stderrorvisP(1:6));    
+er.Color = [0 0 0];                            
+er.LineStyle = 'none';  
+
+hold off
