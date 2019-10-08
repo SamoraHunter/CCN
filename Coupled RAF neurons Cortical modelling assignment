@@ -1,0 +1,196 @@
+clc 
+clear all 
+close all 
+%% Setting parameters 
+ 
+%Samples 
+Nsamp = 300; 
+%Damping factor 
+damp_1 = 2.50; 
+%Natural frequency, make oscillations of 1.1Hz 
+w_1 = 1.09*2*pi; 
+%Time-step 
+dt = 0.1;  
+ 
+times = 0:dt:(Nsamp*dt - dt); 
+ 
+%% Set up neurons 
+ 
+dv_1 = zeros(2, Nsamp); 
+v_1 = zeros(2, Nsamp); 
+ 
+dv_2 = zeros(2, Nsamp); 
+v_2 = zeros(2, Nsamp); 
+ 
+dv_3 = zeros(2, Nsamp); 
+v_3 = zeros(2, Nsamp); 
+ 
+ 
+ 
+%% Initialize weights 
+% input to hidden layer  
+ 
+%input 1 to hidden 1  
+%input 1 to hidden 2 
+%input 2 to hidden 1  
+%input 2 to hidden 2 
+ 
+wi11 = -1; 
+wi12 = 1; 
+wi21 = 1; 
+wi22 = -1; 
+ 
+%hidden to output layer 
+%hidden 1 to out 3 
+%hidden 2 to out 3 
+ 
+wh13 = 1; 
+wh23 = 1; 
+ 
+ 
+ 
+ 
+ 
+I_0x1 = zeros(1, Nsamp); 
+I_0x2 = zeros(1, Nsamp); 
+ 
+%input 75 
+%x1 = 0 x2 = 1 
+for invec = 10:10:Nsamp 
+% I_0x1(1,invec) = 0 
+% I_0x2(1,invec) = 75  
+I_0x1(1,12) = 0; 
+I_0x2(1,12) = 75; 
+end 
+ 
+ 
+ 
+% %x1 = 1 x2 = 0 
+% for invec = 10:10:Nsamp 
+% I_0x1(1,invec) = 37; 
+% I_0x2(1,invec) = 0; 
+% I_0x1(1,12) = 75; 
+% I_0x2(1,12) = 0; 
+%  
+% end 
+%  
+%x1 = 1 x2 = 1 
+% for invec = 10:10:Nsamp 
+% I_0x1(1,invec) = 37; 
+% I_0x2(1,invec) = 37; 
+% I_0x1(1,12) = 75; 
+% I_0x2(1,12) = 75; 
+%  
+% end 
+ 
+%  
+% %x1 = 0 x2 = 0 
+% for invec = 10:10:Nsamp 
+% I_0x1(1,invec) = 0; 
+% I_0x2(1,invec) = 0; 
+%I_0x1(1,12) = 0; 
+%I_0x2(1,12) = 0; 
+%  
+% end 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+threshold = 1.00000 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+for it=2:Nsamp 
+%1 Neuron 
+dv_1(1,it) = v_1(2,it-1); 
+dv_1(2,it) = -(w_1^2)*v_1(1,it-1) - 2*damp_1*v_1(2,it-1) + I_0x1(1,it-1) * wi11 + I_0x2(1,it-1) * wi21; 
+v_1(1,it) = v_1(1,it-1) + dt*dv_1(1,it); 
+v_1(2,it) = v_1(2,it-1) + dt*dv_1(2,it); 
+if (v_1(1,it) >= threshold) 
+spike_1(1,it) = 1; 
+else 
+spike_1(1,it) = 0; 
+end 
+ 
+ 
+ 
+%2 Neuron 
+dv_2(1,it) = v_2(2,it-1); 
+dv_2(2,it) = -(w_1^2)*v_2(1,it-1) - 2*damp_1*v_2(2,it-1) + I_0x1(1,it-1) * wi12 + I_0x2(1,it-1) * wi22; 
+v_2(1,it) = v_2(1,it-1) + dt*dv_1(1,it); 
+v_2(2,it) = v_2(2,it-1) + dt*dv_1(2,it); 
+if (v_2(1,it) >= threshold) 
+spike_2(1,it) = 1; 
+else 
+spike_2(1,it) = 0; 
+end 
+ 
+ 
+ 
+%3 Neuron 
+%removed: + I_0(1,it-1) and removed -1 from spike index 
+dv_3(1,it) = v_3(2,it-1); 
+dv_3(2,it) = -(w_1^2)*v_3(1,it-1) - 2*damp_1*v_3(2,it-1) + wh13*(spike_1(1,it) * 37) + wh23 * (37 * spike_2(1,it)); 
+v_3(1,it) = v_3(1,it-1) + dt*dv_3(1,it); 
+v_3(2,it) = v_3(2,it-1) + dt*dv_3(2,it); 
+if (v_3(1,it) >= threshold) 
+spike_3(1,it) = 1; 
+else 
+spike_3(1,it) = 0; 
+end 
+end  
+ 
+figure('name', 'Output neuron 3') 
+ 
+subplot(3, 1, 1) 
+stem(times, spike_3(1,:)) 
+subplot(3, 1, 2) 
+plot(times, v_3(1,:)) 
+hold on 
+plot(times, ones(1,Nsamp), 'b') 
+subplot(3, 1, 3) 
+ 
+stem(times, I_0x1(1,:)) 
+hold on 
+stem(times, I_0x2(1,:)) 
+ 
+ 
+ 
+figure('name', 'hidden neuron 1') 
+ 
+subplot(3, 1, 1) 
+stem(times, spike_2(1,:)) 
+subplot(3, 1, 2) 
+plot(times, v_2(1,:)) 
+hold on 
+plot(times, ones(1,Nsamp), 'b') 
+subplot(3, 1, 3) 
+ 
+stem(times, I_0x1(1,:)) 
+hold on 
+stem(times, I_0x2(1,:)) 
+ 
+ 
+ 
+figure('name', 'hidden neuron 2') 
+ 
+subplot(3, 1, 1) 
+stem(times, spike_2(1,:)) 
+subplot(3, 1, 2) 
+plot(times, v_2(1,:)) 
+hold on 
+plot(times, ones(1,Nsamp), 'b') 
+subplot(3, 1, 3) 
+ 
+stem(times, I_0x1(1,:)) 
+hold on 
+stem(times, I_0x2(1,:)) 
